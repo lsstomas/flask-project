@@ -1,59 +1,40 @@
-import mysql.connector
-from mysql.connector import Error
-from config import Config
+from src import db
+from werkzeug.security import generate_password_hash, check_password_hash
 
 
-class Produto:
-    def __init__(self, nome, descricao, preco, id=None):
-        self.id = id
+class Produto(db.Model):
+    __tablename__ = "produto"
+    id = db.Column(db.Integer, primary_key=True)
+    nome = db.Column(db.String(100), nullable=False)
+    descricao = db.Column(db.String(200), nullable=True)
+    preco = db.Column(db.Float, nullable=False)
+
+    def __init__(self, nome, email, senha) -> None:
         self.nome = nome
-        self.descricao = descricao
-        self.preco = preco
+        self.email = email
+        self.senha = senha
 
-    # Método para conectar ao banco de dados
-    @staticmethod
-    def get_db_connection():
-        try:
-            connection = mysql.connector.connect(
-                host=Config.MYSQL_HOST,
-                user=Config.MYSQL_USER,
-                password=Config.MYSQL_PASSWORD,
-                database=Config.MYSQL_DB,
-                port=Config.MYSQL_PORT,
-            )
-            return connection
-        except Error as e:
-            print(f"Erro ao estabelecer conexão com a plataforma MySQL: {e}")
-            return None
+    def __repr__(self) -> str:
+        return f"ID: {self.id} | Produto: {self.nome}"
 
-    # Método para listar todos produtos
-    @staticmethod
-    def get_all():
-        connection = Produto.get_db_connection()
 
-        if connection is not None:
-            cursor = connection.cursor(dictionary=True)
+class Usuario(db.Model):
+    __tablename__ = "usuario"
+    id = db.Column(db.Integer, primary_key=True)
+    usuario = db.Column(db.String(100), unique=True, nullable=False)
+    email = db.Column(db.String(150), unique=True, nullable=False)
+    senha = db.Column(db.String(128), nullable=False)
 
-            cursor.execute("SELECT * FROM produto")
-            produtos = cursor.fetchall()
+    def set_password(self, password):
+        self.senha = generate_password_hash(password)
 
-            cursor.close()
-            connection.close()
+    def check_password(self, password):
+        return check_password_hash(self.senha, password)
 
-            return produtos
-        return []
+    def __init__(self, usuario, email, senha) -> None:
+        self.usuario = usuario
+        self.email = email
+        self.set_password(senha)
 
-    # Método para adicionar produtos
-    def add_product(self):
-        connection = Produto.get_db_connection()
-
-        if connection is not None:
-            cursor = connection.cursor()
-
-            cursor.execute(
-                f'INSERT INTO produto (nome, descricao, preco) VALUES ("{self.nome}", "{self.descricao}", {self.preco})'
-            )
-
-            connection.commit()
-            cursor.close()
-            connection.close()
+    def __repr__(self) -> str:
+        return f"Usuário: {self.usuario}"

@@ -1,11 +1,16 @@
 {% extends "base.html" %}
+{% block title %}Listagem de Produtos{% endblock title %}
 
 {% block main %}
     <h1>Listagem de Produtos</h1>
 
-    <ul>
-        {% for produto in produtos %}
-            <li>{{ produto.id }} | {{ produto.nome }} - {{ produto.descricao }}: {{ produto.preco }}</li>
-        {% endfor %}    
-    </ul>
+    {% if produtos %}
+        <ul>
+            {% for produto in produtos %}
+                <li>{{ produto.id }} | {{ produto.nome }} | {{ produto.descricao }} | {{ produto.preco }}</li>
+            {% endfor %}    
+        </ul>
+    {% else %}
+        <p>Não há produtos disponíveis para visualização!</p>
+    {% endif %}
 {% endblock main %}
